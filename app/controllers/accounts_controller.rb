@@ -1,9 +1,6 @@
 class AccountsController < ApplicationController
   def show
-    @account_page = AccountPage.new(
-      repos: find_subscribed_repos,
-      billable_email: current_user.billable_email
-    )
+    @account_page = account_page_with_email(current_user.billable_email)
   end
 
   def update
@@ -31,9 +28,14 @@ class AccountsController < ApplicationController
   end
 
   def updated_account_page
+    account_page_with_email(new_billable_email)
+  end
+
+  def account_page_with_email(email)
     AccountPage.new(
       repos: find_subscribed_repos,
-      billable_email: new_billable_email
+      billable_email: email,
+      payment_gateway_subscriptions: current_user.payment_gateway_subscriptions,
     )
   end
 end

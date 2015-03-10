@@ -46,6 +46,17 @@ module StripeApiHelper
     )
   end
 
+  def stub_customer_with_discount_find_request(customer_id = stripe_customer_id)
+    stub_request(:get, "#{stripe_base_url}/#{customer_id}").with(
+      headers: { "Authorization" => "Bearer #{ENV['STRIPE_API_KEY']}" }
+    ).to_return(
+      status: 200,
+      body: File.read(
+        "spec/support/fixtures/stripe_customer_find_with_discount.json"
+      )
+    )
+  end
+
   def stub_customer_update_request(attrs = { card: "card-token" })
     stub_request(
       :post,
