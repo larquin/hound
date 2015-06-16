@@ -68,7 +68,7 @@ describe BuildRunner, '#run' do
     end
 
     it "creates GitHub statuses" do
-      repo = create(:repo, :active, github_id: 123)
+      repo = create(:repo, :active)
       payload = stubbed_payload(
         github_repo_id: repo.github_id,
         full_repo_name: "test/repo",
