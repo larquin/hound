@@ -1,6 +1,8 @@
 class Payload
   pattr_initialize :unparsed_data
 
+  attr_reader :unparsed_data
+
   def data
     @data ||= parse_data
   end

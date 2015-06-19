@@ -27,8 +27,12 @@ class CompletedFileReviewJob
       file_review.build_violation(line, violation.fetch("message"))
     end
 
+    file_review.complete
     file_review.save!
 
-    # comment on violations
+    payload = Payload.new(build.payload)
+    pull_request = PullRequest.new(payload, ENV.fetch("HOUND_GITHUB_TOKEN"))
+
+    BuildReport.run(pull_request, build)
   end
 end
