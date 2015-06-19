@@ -1,70 +1,91 @@
-require "scss_lint"
+# require "scss_lint"
 
 module StyleGuide
   class Scss < Base
-    DEFAULT_CONFIG_FILENAME = "scss.yml"
+    LANGUAGE = "scss"
 
     def file_review(file)
-      perform_file_review(file)
+      Resque.enqueue(
+        ScssReviewJob,
+        # repo_name: file.repo_name,
+        filename: file.filename,
+        commit_sha: file.sha,
+        patch: file.patch_body,
+        payload: ""
+        content: file.content,
+        custom_config: repo_config.raw_for(LANGUAGE)
+      )
+
+      FileReview.new(filename: file.filename)
     end
 
     def file_included?(file)
-      !config.excluded_file?(file.filename)
+      true
     end
 
-    private
+    # DEFAULT_CONFIG_FILENAME = "scss.yml"
 
-    def perform_file_review(file)
-      FileReview.new(filename: file.filename) do |file_review|
-        runner = build_runner
-        runner.run([file.content])
+    # def file_review(file)
+    #   perform_file_review(file)
+    # end
 
-        runner.lints.each do |violation|
-          line = file.line_at(violation.location.line)
-          file_review.build_violation(line, violation.description)
-        end
+    # def file_included?(file)
+    #   !config.excluded_file?(file.filename)
+    # end
 
-        file_review.complete
-      end
-    end
+    # private
 
-    def build_runner
-      SCSSLint::Runner.new(config)
-    end
+    # def perform_file_review(file)
+    #   FileReview.new(filename: file.filename) do |file_review|
+    #     runner = build_runner
+    #     runner.run([file.content])
 
-    def config
-      @config ||= SCSSLint::Config.load(
-        custom_config_file.path,
-        merge_with_default: false
-      )
-    end
+    #     runner.lints.each do |violation|
+    #       line = file.line_at(violation.location.line)
+    #       file_review.build_violation(line, violation.description)
+    #     end
 
-    def custom_config_file
-      merged_config = SCSSLint::Config.send(
-        :smart_merge,
-        default_options,
-        custom_config
-      )
+    #     file_review.complete
+    #   end
+    # end
 
-      Tempfile.create("").tap do |tempfile|
-        tempfile.write(merged_config.to_yaml)
-        tempfile.rewind
-      end
-    end
+    # def build_runner
+    #   SCSSLint::Runner.new(config)
+    # end
 
-    def custom_config
-      repo_config.for(name) || {}
-    end
+    # def config
+    #   @config ||= SCSSLint::Config.load(
+    #     custom_config_file.path,
+    #     merge_with_default: false
+    #   )
+    # end
 
-    def default_options
-      YAML.load_file(default_config_file)
-    end
+    # def custom_config_file
+    #   merged_config = SCSSLint::Config.send(
+    #     :smart_merge,
+    #     default_options,
+    #     custom_config
+    #   )
 
-    def default_config_file
-      DefaultConfigFile.new(
-        DEFAULT_CONFIG_FILENAME,
-        repository_owner_name
-      ).path
-    end
+    #   Tempfile.create("").tap do |tempfile|
+    #     tempfile.write(merged_config.to_yaml)
+    #     tempfile.rewind
+    #   end
+    # end
+
+    # def custom_config
+    #   repo_config.for(name) || {}
+    # end
+
+    # def default_options
+    #   YAML.load_file(default_config_file)
+    # end
+
+    # def default_config_file
+    #   DefaultConfigFile.new(
+    #     DEFAULT_CONFIG_FILENAME,
+    #     repository_owner_name
+    #   ).path
+    # end
   end
 end

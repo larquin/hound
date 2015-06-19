@@ -18,6 +18,7 @@ class RepoConfig
     options.nil? || !disabled?(language)
   end
 
+  # parsed config
   def for(language)
     if language == "ruby" && legacy?
       hound_config
@@ -29,6 +30,16 @@ class RepoConfig
       else
         {}
       end
+    end
+  end
+
+  def raw_for(language)
+    config_file_path = config_path_for(language)
+
+    if config_file_path
+      load_file(config_file_path, FILE_TYPES.fetch(language))
+    else
+      ""
     end
   end
 
