@@ -149,33 +149,19 @@ describe StyleChecker, "#file_reviews" do
   end
 
   context "for a SCSS file" do
-    context "with style violations" do
-      it "returns violations" do
-        file = stub_commit_file(
-          "test.scss",
-          ".table p.inner table td { background: red; }"
-        )
-        pull_request = stub_pull_request(pull_request_files: [file])
+    it "delegates to the SCSS style guide" do
+      file = stub_commit_file(
+        "test.scss",
+        ".table p.inner table td { background: red; }"
+      )
+      pull_request = stub_pull_request(pull_request_files: [file])
+      scss_guide = double("StyleGuide::Scss", enabled?: true, file_included?: true)
+      allow(scss_guide).to receive(:file_review)
+      allow(StyleGuide::Scss).to receive(:new).and_return(scss_guide)
 
-        violation_messages = pull_request_violations(pull_request)
+      StyleChecker.new(pull_request).file_reviews
 
-        expect(violation_messages).to include(
-          "Selector should have depth of applicability no greater than 2, but was 4"
-        )
-      end
-    end
-
-    context "without style violations" do
-      it "returns no violations" do
-        file = stub_commit_file("test.scss", "table td { color: green; }")
-        pull_request = stub_pull_request(pull_request_files: [file])
-
-        violation_messages = pull_request_violations(pull_request)
-
-        expect(violation_messages).not_to include(
-          "Selector should have depth of applicability no greater than 3"
-        )
-      end
+      expect(scss_guide).to have_received(:file_review).with(file)
     end
   end
 
@@ -242,6 +228,8 @@ describe StyleChecker, "#file_reviews" do
       filename: filename,
       content: formatted_contents,
       line_at: line,
+      sha: "abc123",
+      patch_body: "",
     )
   end
 

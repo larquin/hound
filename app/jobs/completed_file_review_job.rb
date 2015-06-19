@@ -23,6 +23,7 @@ class CompletedFileReviewJob
 
     attributes.fetch("violations").each do |violation|
       line = commit_file.line_at(violation.fetch("line"))
+
       file_review.build_violation(line, violation.fetch("message"))
     end
 

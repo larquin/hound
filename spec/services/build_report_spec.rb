@@ -20,7 +20,11 @@ describe BuildReport do
       end
 
       it "creates GitHub statuses" do
-        file_review = create(:file_review, violations: [build(:violation)])
+        file_review = create(
+          :file_review,
+          completed_at: Time.current,
+          violations: [build(:violation)],
+        )
         stubbed_commenter
         github_api = stubbed_github_api
         pull_request = stubbed_pull_request

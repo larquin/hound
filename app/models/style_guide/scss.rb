@@ -11,7 +11,7 @@ module StyleGuide
         filename: file.filename,
         commit_sha: file.sha,
         patch: file.patch_body,
-        payload: ""
+        payload: "",
         content: file.content,
         custom_config: repo_config.raw_for(LANGUAGE)
       )
