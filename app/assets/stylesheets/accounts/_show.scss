@@ -99,8 +99,8 @@ table {
   margin-bottom: 2em;
   padding-bottom: 3em;
 
-  input[type="text"],
-  input[type="email"] {
+  [type="text"],
+  [type="email"] {
     font-weight: 300;
     min-width: 20em;
     padding: 0.5em;

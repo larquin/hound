@@ -47,7 +47,7 @@
         Update account settings
       %form{ 'ng-controller' => 'accountController' }
         .form-group
-          %label Email address for receipts
+          %label.form-group__label Email address for receipts
           %input{ type: 'email', placeholder: "#{@account_page.billable_email}", 'ng-model' => 'account.billable_email' }
           %p.inline-flash.inline-flash--success{ 'ng-cloak' => 'ng-cloak', 'ng-show' => 'updateSucceeded' }
             %i.fa.fa-check
