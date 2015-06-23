@@ -18,21 +18,6 @@ describe BuildReport do
         expect(commenter).to have_received(:comment_on_violations).
           with(file_review.violations.take(BuildReport::MAX_COMMENTS))
       end
-
-      it "creates GitHub statuses" do
-        file_review = create(:file_review, violations: [build(:violation)])
-        stubbed_commenter
-        github_api = stubbed_github_api
-        pull_request = stubbed_pull_request
-
-        BuildReport.run(pull_request, file_review.build)
-
-        expect(github_api).to have_received(:create_success_status).with(
-          "test/repo",
-          "headsha",
-          "1 violation found."
-        )
-      end
     end
 
     context "with subscribed private repo and opened pull request" do

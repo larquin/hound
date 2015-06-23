@@ -9,7 +9,7 @@ class BuildRunner
       review_pull_request
     end
   rescue RepoConfig::ParserError
-    create_config_error_status
+    commit_status.set_failure
   rescue Octokit::Unauthorized
     if users_with_token.any?
       reset_token
@@ -28,10 +28,11 @@ class BuildRunner
 
   def review_pull_request
     track_subscribed_build_started
-    create_pending_status
+    commit_status.set_pending
     upsert_owner
     build = create_build
     BuildReport.run(pull_request, build)
+    commit_status.set_success(build.violation_count)
   end
 
   def relevant_pull_request?
@@ -96,23 +97,6 @@ class BuildRunner
     end
   end
 
-  def create_pending_status
-    github.create_pending_status(
-      payload.full_repo_name,
-      payload.head_sha,
-      I18n.t(:pending_status)
-    )
-  end
-
-  def create_config_error_status
-    github.create_error_status(
-      payload.full_repo_name,
-      payload.head_sha,
-      I18n.t(:config_error_status),
-      configuration_url
-    )
-  end
-
   def upsert_owner
     owner = Owner.upsert(
       github_id: payload.repository_owner_id,
@@ -130,7 +114,11 @@ class BuildRunner
     @github ||= GithubApi.new(token)
   end
 
-  def configuration_url
-    Rails.application.routes.url_helpers.configuration_url(host: ENV["HOST"])
+  def commit_status
+    @commit_status ||= CommitStatus.new(
+      repo_name: payload.full_repo_name,
+      sha: payload.head_sha,
+      github: github
+    )
   end
 end

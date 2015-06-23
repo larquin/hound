@@ -7,6 +7,10 @@ class Build < ActiveRecord::Base
 
   validates :repo, presence: true
 
+  def violation_count
+    violations.map(&:messages_count).sum
+  end
+
   private
 
   def generate_uuid

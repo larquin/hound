@@ -11,7 +11,6 @@ class BuildReport
 
   def run
     commenter.comment_on_violations(priority_violations)
-    create_success_status
     track_subscribed_build_completed
   end
 
@@ -31,18 +30,6 @@ class BuildReport
 
   def priority_violations
     violations.take(MAX_COMMENTS)
-  end
-
-  def create_success_status
-    github.create_success_status(
-      pull_request.head_commit.repo_name,
-      pull_request.head_commit.sha,
-      I18n.t(:success_status, count: violation_count),
-    )
-  end
-
-  def violation_count
-    violations.map(&:messages_count).sum
   end
 
   def github
